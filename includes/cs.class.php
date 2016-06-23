@@ -30,15 +30,15 @@ class cs extends Thread
         echo "接收表单URL: ".$_SERVER["argv"][2]."\n";
         for ($arg_i = 3; $arg_i < $_SERVER["argc"]; $arg_i++) {
             echo "正在为第".($arg_i - 2)."个表单数据创建线程\n";
-            if (($form_data = file_get_contents($_SERVER["argv"][2])) == false) {
-                echo "文件".$_SERVER["argv"][2]."不存在，取消本表单的线程创建\n";
+            if (($form_data = file_get_contents($_SERVER["argv"][$arg_i])) == false) {
+                echo "文件".$_SERVER["argv"][$arg_i]."不存在，取消本表单的线程创建\n";
                 continue;
             }
             for ($i = 1; $i <= $thread_num; $i++) {
                 echo "[表单".($arg_i - 2)."]创建第" . $i . "个登录线程，总共" . $thread_num . "个\n";
                 $this->pthreads_obj[$i] = new cs($thread_num);
-                $this->pthreads_obj[$i]->raw_fields = $_SERVER["argv"][$arg_i];
-                $this->pthreads_obj[$i]->post_url = $form_data;
+                $this->pthreads_obj[$i]->raw_fields = $form_data;
+                $this->pthreads_obj[$i]->post_url = $_SERVER["argv"][2];
                 $this->pthreads_obj[$i]->start();
                 sleep(2);
             }
