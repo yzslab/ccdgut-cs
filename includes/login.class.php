@@ -14,15 +14,17 @@ class login extends Thread
     protected $view_state;
     protected $sleep_time;
     protected $pthreads_obj = array();
+    protected $system_url;
+    private $success = false;
 
-    public function __construct($username, $password, $session_id = "", $view_state = "", $sleep_time = 1)
-    {
+    public function __construct($system_url, $username, $password, $session_id = "", $view_state = "", $sleep_time = 1) {
+        $this->system_url = $system_url;
         if (empty($session_id) || empty($view_state)) {
             echo "开始获取Session ID\n";
             $curl_opt_array = array(
                 CURLOPT_HEADER => true,
                 CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_URL => SYSTEM_URL,
+                CURLOPT_URL => $this->system_url,
                 CURLOPT_TIMEOUT => TIMEOUT
             );
             $ch = curl_init();
@@ -44,7 +46,7 @@ class login extends Thread
                 CURLOPT_USERAGENT => USER_AGENT,
                 CURLOPT_HEADER => true,
                 CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_URL => SYSTEM_URL."/".$session_id."/default2.aspx",
+                CURLOPT_URL => $this->system_url."/".$session_id."/default2.aspx",
                 CURLOPT_TIMEOUT => TIMEOUT
             );
             curl_setopt_array($ch, $curl_opt_array);
@@ -69,15 +71,15 @@ class login extends Thread
         $this->session_id = $session_id;
         $this->view_state = $view_state;
         $this->sleep_time = $sleep_time;
-        file_put_contents(__DIR__ . "/session_id_".$username, $session_id);
-        file_put_contents(__DIR__ . "/view_state_".$username, $view_state);
+        file_put_contents(ccdgut_cs\common::get_session_file_name($system_url, $this->username), $session_id);
+        file_put_contents(ccdgut_cs\common::get_view_state_file_name($system_url, $this->username), $view_state);
     }
 
     public function start_logion($thread_num = 10)
     {
         for ($i = 1; $i <= $thread_num; $i++) {
             echo "创建第".$i."个登录线程，总共".$thread_num."个\n";
-            $this->pthreads_obj[$i] = new login($this->username, $this->password, $this->session_id, $this->view_state, $thread_num);
+            $this->pthreads_obj[$i] = new login($this->system_url, $this->username, $this->password, $this->session_id, $this->view_state, $thread_num);
             $this->pthreads_obj[$i]->start();
             sleep(2);
         }
@@ -98,24 +100,29 @@ class login extends Thread
             CURLOPT_USERAGENT => USER_AGENT,
             CURLOPT_HEADER => true,
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_URL => SYSTEM_URL."/".$this->session_id."/default2.aspx",
+            CURLOPT_URL => $this->system_url."/".$this->session_id."/default2.aspx",
             CURLOPT_TIMEOUT => TIMEOUT,
             CURLOPT_POST => true,
             CURLOPT_POSTFIELDS => $fields,
-            CURLOPT_REFERER => SYSTEM_URL."/".$this->session_id."/default2.aspx"
+            CURLOPT_REFERER => $this->system_url."/".$this->session_id."/default2.aspx"
         );
         curl_setopt_array($ch, $curl_opt_array);
         while (true) {
-            echo "[线程".$this->getThreadId()."]".time()."\n";
+            // echo "[线程".$this->getThreadId()."]".time()."\n";
             $login_return = curl_exec($ch);
             if ($login_return === false) {
                 echo("Curl请求失败: " . curl_error($ch) . "\n");
                 continue;
             }
-            if (preg_match("/xs_main\.aspx\?xh=" . $this->username . "/", $login_return))
-                echo "[线程".$this->getThreadId()."]登录成功\n";
-            else
-                echo "[线程".$this->getThreadId()."]登录失败\n";
+            if (preg_match("/xs_main\.aspx\?xh=" . $this->username . "/", $login_return)) {
+                if (!$this->success) {
+                    echo "[线程" . $this->getThreadId() . "]" . $this->system_url . " 登录成功\n" . "Please select class via $this->system_url$this->session_id/xs_main.aspx?xh=$this->username\n";
+                    $this->success = true;
+                }
+            } else {
+                $this->success = false;
+                echo "[线程" . $this->getThreadId() . "]" . $this->system_url . " Login failed\n";
+            }
             sleep($this->sleep_time);
         }
     }
