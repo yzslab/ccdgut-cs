@@ -6,7 +6,9 @@
  * Date: 12/21/16
  * Time: 6:36 PM
  */
-class thread_holder extends Thread {
+namespace CCDGUT_ClassSelector;
+
+class ThreadHolder extends \Thread {
     private $object;
     private $method_name;
     private $argv;
@@ -18,7 +20,7 @@ class thread_holder extends Thread {
     }
 
     public function run() {
-        $reflection = new ReflectionClass(get_class($this->object));
+        $reflection = new \ReflectionClass(get_class($this->object));
         $method = $reflection->getMethod($this->method_name);
         $method->invoke($this->object, ...$this->argv);
     }
