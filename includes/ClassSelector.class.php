@@ -15,7 +15,7 @@ class ClassSelector extends \Thread {
     private $system_url;
     private $session_id;
     private $raw_fields;
-    private $raw_field_sha1;
+    private $post_field_file;
     private $sleep_time;
 
     public function __construct() {
@@ -33,29 +33,30 @@ class ClassSelector extends \Thread {
         }
     }
 
-    private function main_constructor($system_url, $username, $session_id, $post_url, $raw_fields) {
+    private function main_constructor($system_url, $username, $session_id, $post_url, $post_field_file) {
         $this->system_url = $system_url;
         self::$username = $username;
         $this->session_id = $session_id;
         self::$post_url = $post_url;
-        $this->raw_fields = $raw_fields;
-        $this->raw_field_sha1 = sha1($this->raw_fields);
+        if (!file_exists($post_field_file))
+            throw new \Exception("File " . $post_field_file . " not found.\n");
+        $this->post_field_file = $post_field_file;
     }
 
-    private function thread_constructor($system_url, $session_id, $raw_fields, $raw_field_sha1, $sleep_time, $thread = true) {
+    private function thread_constructor($system_url, $session_id, $raw_fields, $post_field_file, $sleep_time, $thread = true) {
         $this->system_url = $system_url;
         $this->session_id = $session_id;
         $this->raw_fields = $raw_fields;
         $this->sleep_time = $sleep_time;
-        $this->raw_field_sha1 = $raw_field_sha1;
+        $this->post_field_file = $post_field_file;
     }
 
     public function start_cs($thread_num = 10) {
-        echo "接收表单URL: ".self::$post_url."\n";
+        $raw_fields = file_get_contents($this->post_field_file);
         $pthreads_objs = [];
         for ($i = 1; $i <= $thread_num; $i++) {
-            echo "创建第" . $i . "个登录线程，总共" . $thread_num . "个\n";
-            $pthreads_objs[$i] = new self($this->system_url, $this->session_id, $this->raw_fields, $this->raw_field_sha1, $this->sleep_time, true);
+            echo "[". $this->system_url .": ". $this->post_field_file ."]创建第" . $i . "个登录线程，总共" . $thread_num . "个\n";
+            $pthreads_objs[$i] = new self($this->system_url, $this->session_id, $raw_fields, $this->post_field_file, $this->sleep_time, true);
         }
         foreach ($pthreads_objs as $obj) {
             $obj->start();
@@ -85,9 +86,9 @@ class ClassSelector extends \Thread {
             $cs_return_array =  explode("\n", $cs_return);
             $cs_return_array = preg_grep("/>alert\(/", $cs_return_array);
             if (count($cs_return_array))
-                echo "[线程".$this->getThreadId()."(".$this->system_url.")]Class select request ". $this->raw_field_sha1 ." submitted successfully, timestamp: ".time()."\n\tServer reply: \n";
+                echo "[线程".$this->getThreadId()."(".$this->system_url.")]Class select request ". $this->post_field_file ." submitted successfully, timestamp: ".time()."\n\tServer reply: \n";
             else
-                echo "[线程".$this->getThreadId()."(".$this->system_url.")]Class select request ". $this->raw_field_sha1 ." submitted failed, timestamp: ".time()."\n\tServer reply: \n";
+                echo "[线程".$this->getThreadId()."(".$this->system_url.")]Class select request ". $this->post_field_file ." submitted failed, timestamp: ".time()."\n\tServer reply: \n";
             foreach ($cs_return_array as $alert) {
                 echo "\t" . iconv("gbk", "utf-8", $alert) . "\n";
             }

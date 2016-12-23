@@ -35,10 +35,7 @@ foreach ($groups as $group_member) {
     // For each system url's post fields
     for ($i = 1; $i < $count; ++$i) {
         $file_path = $group_array[$i];
-        if (file_exists($file_path))
-            $objs[] = new ThreadHolder(new ClassSelector($system_url, $usernName, $session_id, $postUrl, file_get_contents($file_path)), "start_cs", CLASS_SELECT_THREAD_COUNT);
-        else
-            echo "File " . $file_path . " not found.\n";
+        $objs[] = new ThreadHolder(new ClassSelector($system_url, $usernName, $session_id, $postUrl, $file_path), "start_cs", CLASS_SELECT_THREAD_COUNT);
     }
 
 }
