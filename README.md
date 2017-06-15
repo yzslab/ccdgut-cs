@@ -14,7 +14,7 @@ Add your teaching system urls to associative array constant SYSTEM_URLS, name as
 ##Login function
 ```php login.php USERNAME PASSWORD [SESSION_ID] [VIEW_STATE]```
 
-cs.php will automatically login to all the teaching system urls and print a session id, please record the session id for each system url.
+login.php will automatically login to all the teaching system urls and print a session id, please record the session id for each system url.
 ##Class selector
 ```php cs.php USERNAME POST_URL SYSTEM_URL_NAME|SYSTEM_URL,POST_FIELDS_FILE_PATH1[,POST_FIELDS_FILE_PATH2 ...] [SYSTEM_URL_NAME|SYSTEM_URL,POST_FIELDS_FILE_PATH1[,POST_FIELDS_FILE_PATH2 ...]]```
 
