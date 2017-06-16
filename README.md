@@ -1,4 +1,4 @@
-#City College of Dongguan University Class Selector
+#Class Selector for City College of Dongguan University of Technology
 Written under PHP 7.0 zend thread safe version.
 
 Extension requirement as below:
@@ -27,3 +27,5 @@ Start auto login:
 Start class selector: 
 
 ```screen php7.0-zts cs.php 201535010200 "xf_xsqxxxk.aspx?xh=201535010200&xm=%00%00%00%00%00%00&gnmkdm=N000000" "http://10.20.208.11:8088/,/home/username/11_file1,/home/username/11_file2" "http://10.20.208.12/,/home/username/12_file1,/home/username/12_file2"```
+#Demo
+![](http://ww1.sinaimg.cn/large/69b07983gy1fgn5nlhg4tj20pg0kj778.jpg)
